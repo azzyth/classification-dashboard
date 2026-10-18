@@ -2,7 +2,7 @@
 
 # 📊 Classification ML Dashboard
 
-**A real-time classification ML dashboard with auto-EDA visualization. Upload a CSV → instant predictions → live metrics → 5 types of EDA plots generated automatically.**
+**A real-time classification ML dashboard with auto-EDA visualization. Upload a CSV → fast predictions → live metrics → 5 types of EDA plots generated automatically.**
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
