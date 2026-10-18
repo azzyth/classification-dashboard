@@ -15,24 +15,24 @@
 
 ## Why this exists
 
-Most ML dashboards require you to write code for every visualization. This one **auto-detects** feature types from your CSV and generates the right EDA plots automatically — segmented bars for categoricals, density plots for numerics, WoE for all features. No configuration needed.
+Most ML dashboards require you to write code for every visualization. This one **auto-detects** feature types from your CSV and generates the right EDA plots automatically   segmented bars for categoricals, density plots for numerics, WoE for all features. No configuration needed.
 
 It's also a **live ML lab**: input data → instant prediction → data accumulates → metrics & confusion matrix update in real-time → retrain on accumulated data.
 
 ## What it does
 
-- **CSV Upload** — drag & drop any classification CSV. Auto-detects feature types (numeric/categorical/binary) and target column.
-- **Auto-Visualization** — generates 5 types of EDA plots automatically:
-  - **Overlapping Density** — KDE/histogram by class (numeric features)
-  - **Point Plot** — mean ± CI per class (numeric features)
-  - **Segmented Bar** — class proportion per category (categorical features)
-  - **Crosstab Heatmap** — feature × target count matrix
-  - **WoE (Weight of Evidence)** — with IV annotation (all features)
-- **Real-time Prediction** — input features → instant class + probability bars
-- **Live Metrics** — Accuracy, Macro-F1, Micro-F1 update every 5s
-- **Confusion Matrix** — auto-updating heatmap
-- **Retrain** — one-click model retraining on accumulated labeled data
-- **Dark Mode** — toggle with persistence
+- **CSV Upload**  drag & drop any classification CSV. Auto-detects feature types (numeric/categorical/binary) and target column.
+- **Auto-Visualization**   generates 5 types of EDA plots automatically:
+  - **Overlapping Density**   KDE/histogram by class (numeric features)
+  - **Point Plot**   mean ± CI per class (numeric features)
+  - **Segmented Bar**   class proportion per category (categorical features)
+  - **Crosstab Heatmap**   feature × target count matrix
+  - **WoE (Weight of Evidence)**   with IV annotation (all features)
+- **Real-time Prediction**   input features → instant class + probability bars
+- **Live Metrics**   Accuracy, Macro-F1, Micro-F1 update every 5s
+- **Confusion Matrix**   auto-updating heatmap
+- **Retrain**   one-click model retraining on accumulated labeled data
+- **Dark Mode**   toggle with persistence
 
 ## Architecture
 
