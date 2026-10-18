@@ -1,0 +1,15 @@
+# Data & models (generated at runtime)
+data/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.joblib
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

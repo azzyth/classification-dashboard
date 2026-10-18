@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classification ML Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <h1>Classification ML Dashboard</h1>
+        <span class="subtitle">Real-time tabular classification + EDA visualization lab</span>
+      </div>
+      <div class="header-right">
+        <span id="healthBadge" class="badge badge-ok">● Live</span>
+        <button id="darkToggle" class="btn-icon" title="Toggle dark mode">🌙</button>
+      </div>
+    </header>
+
+    <!-- CSV Upload Section -->
+    <section class="card upload-card">
+      <div class="section-header">
+        <h2>📂 Upload CSV Dataset</h2>
+        <span id="uploadStatus" class="upload-status"></span>
+      </div>
+      <div id="dropZone" class="drop-zone">
+        <div class="drop-content">
+          <div class="drop-icon">📁</div>
+          <p class="drop-text">Drag & drop a CSV file here, or click to browse</p>
+          <p class="drop-hint">Supports classification datasets with a target column</p>
+          <input type="file" id="csvInput" accept=".csv" hidden>
+          <button id="browseBtn" class="btn btn-primary">Browse Files</button>
+        </div>
+        <div id="uploadProgress" class="upload-progress hidden">
+          <div class="spinner"></div>
+          <span>Processing CSV... training model & generating visualizations</span>
+        </div>
+      </div>
+
+      <!-- Target column override -->
+      <div id="targetOverride" class="target-override hidden">
+        <label>Target column:
+          <select id="targetSelect"></select>
+        </label>
+        <button id="reprocessBtn" class="btn btn-accent">Reprocess</button>
+      </div>
+
+      <!-- Analysis Summary -->
+      <div id="analysisSummary" class="analysis-summary hidden">
+        <div class="summary-grid">
+          <div class="summary-item"><span class="summary-val" id="sumRows">—</span><span class="summary-label">Rows</span></div>
+          <div class="summary-item"><span class="summary-val" id="sumCols">—</span><span class="summary-label">Columns</span></div>
+          <div class="summary-item"><span class="summary-val" id="sumFeatures">—</span><span class="summary-label">Features</span></div>
+          <div class="summary-item"><span class="summary-val" id="sumTarget">—</span><span class="summary-label">Target</span></div>
+          <div class="summary-item"><span class="summary-val" id="sumViz">—</span><span class="summary-label">Visualizations</span></div>
+          <div class="summary-item"><span class="summary-val" id="sumModelVer">—</span><span class="summary-label">Model Ver</span></div>
+        </div>
+        <div id="featureTypeList" class="feature-type-list"></div>
+        <div id="classDist" class="class-dist"></div>
+      </div>
+    </section>
+
+    <!-- Visualization Gallery -->
+    <section class="card viz-card">
+      <div class="section-header">
+        <h2>📊 EDA Visualizations</h2>
+        <div class="viz-tabs" id="vizTabs">
+          <button class="viz-tab active" data-type="all">All</button>
+          <button class="viz-tab" data-type="density">Density</button>
+          <button class="viz-tab" data-type="point">Point</button>
+          <button class="viz-tab" data-type="segmented_bar">Seg. Bar</button>
+          <button class="viz-tab" data-type="crosstab">Crosstab</button>
+          <button class="viz-tab" data-type="woe">WoE</button>
+        </div>
+      </div>
+      <div id="vizGallery" class="viz-gallery">
+        <div class="empty-state">Upload a CSV to generate visualizations.</div>
+      </div>
+    </section>
+
+    <!-- Main Grid: Input & Metrics -->
+    <main class="main-grid">
+      <!-- Section 1: Input & Prediction -->
+      <section class="card input-card">
+        <h2>Input & Predict</h2>
+        <div id="featureInputs" class="form-row">
+          <!-- Dynamic feature inputs populated by JS -->
+        </div>
+        <div class="form-row">
+          <label>True Label (optional)
+            <select id="trueLabel">
+              <option value="">— none —</option>
+            </select>
+          </label>
+        </div>
+        <div class="btn-group">
+          <button id="predictBtn" class="btn btn-primary">⚡ Predict</button>
+          <button id="saveBtn" class="btn btn-secondary" disabled>💾 Save Record</button>
+        </div>
+
+        <div id="resultCard" class="result-card hidden">
+          <div class="result-header">
+            <span class="result-label">Predicted:</span>
+            <span id="predClass" class="result-class">—</span>
+            <span id="confidence" class="result-conf">—</span>
+          </div>
+          <div id="probBars" class="prob-bars"></div>
+        </div>
+      </section>
+
+      <!-- Section 2: Metrics & Confusion Matrix -->
+      <section class="card metrics-card">
+        <div class="section-header">
+          <h2>Metrics</h2>
+          <button id="retrainBtn" class="btn btn-accent">🔄 Retrain</button>
+        </div>
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <span class="metric-value" id="mAccuracy">—</span>
+            <span class="metric-label">Accuracy</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-value" id="mMacro">—</span>
+            <span class="metric-label">Macro-F1</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-value" id="mMicro">—</span>
+            <span class="metric-label">Micro-F1</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-value" id="mSamples">—</span>
+            <span class="metric-label">Samples</span>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-box">
+            <h3>Confusion Matrix</h3>
+            <div id="cmContainer" class="cm-grid"></div>
+          </div>
+          <div class="chart-box">
+            <h3>Class Distribution</h3>
+            <canvas id="distChart" height="200"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Data Table -->
+    <section class="card data-card">
+      <div class="section-header">
+        <h2>Accumulated Data</h2>
+        <div class="btn-group">
+          <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+          <button id="clearBtn" class="btn btn-danger">🗑 Clear All</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table id="dataTable">
+          <thead id="tableHead"><tr><th>ID</th><th>Predicted</th><th>True</th><th>Conf</th><th>Time</th></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="empty-state">No records yet. Upload a CSV or input data manually.</div>
+    </section>
+
+    <!-- Image Modal -->
+    <div id="imgModal" class="modal hidden">
+      <div class="modal-content">
+        <button id="modalClose" class="modal-close">✕</button>
+        <img id="modalImg" src="" alt="Visualization">
+        <div id="modalTitle" class="modal-title"></div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
