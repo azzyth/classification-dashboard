@@ -52,7 +52,12 @@ classification-dashboard/
 └── README.md
 ```
 
-## Quick Start
+## Preview
+
+![Dashboard Overview](screenshots/dashboard.png)
+![EDA Visualizations](screenshots/visualizations.png)
+
+> Drop your screenshots into the `screenshots/` folder as `dashboard.png` and `visualizations.png` to display them here.
 
 ```bash
 cd classification-dashboard/backend
