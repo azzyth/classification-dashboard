@@ -145,11 +145,30 @@ function renderVizGallery() {
   filtered.forEach(viz => {
     const card = document.createElement('div');
     card.className = 'viz-card-item';
-    card.innerHTML = `
-      <img src="data:image/png;base64,${viz.image_base64}" alt="${viz.title}" loading="lazy">
-      <div class="viz-card-title">${viz.title}</div>
-      <div class="viz-card-type">${viz.viz_type.replace('_', ' ')}</div>
-    `;
+    if (viz.html) {
+      const frame = document.createElement('iframe');
+      frame.srcdoc = viz.html;
+      frame.style.width = '100%';
+      frame.style.height = '260px';
+      frame.style.border = '0';
+      frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+      frame.loading = 'lazy';
+      card.appendChild(frame);
+    } else if (viz.image_base64) {
+      const img = document.createElement('img');
+      img.src = `data:image/png;base64,${viz.image_base64}`;
+      img.alt = viz.title;
+      img.loading = 'lazy';
+      card.appendChild(img);
+    }
+    const title = document.createElement('div');
+    title.className = 'viz-card-title';
+    title.textContent = viz.title;
+    card.appendChild(title);
+    const type = document.createElement('div');
+    type.className = 'viz-card-type';
+    type.textContent = viz.viz_type.replace('_', ' ');
+    card.appendChild(type);
     card.addEventListener('click', () => openModal(viz));
     gallery.appendChild(card);
   });
@@ -166,17 +185,45 @@ document.querySelectorAll('.viz-tab').forEach(tab => {
 });
 
 // --- Image Modal ---
+let lastFocusBeforeModal = null;
 function openModal(viz) {
   const modal = document.getElementById('imgModal');
-  document.getElementById('modalImg').src = `data:image/png;base64,${viz.image_base64}`;
+  const frame = document.getElementById('modalFrame');
+  const img = document.getElementById('modalImg');
+  if (viz.html) {
+    frame.srcdoc = viz.html;
+    frame.style.display = 'block';
+    img.style.display = 'none';
+  } else if (viz.image_base64) {
+    img.src = `data:image/png;base64,${viz.image_base64}`;
+    img.style.display = 'block';
+    frame.style.display = 'none';
+  }
   document.getElementById('modalTitle').textContent = viz.title;
+  lastFocusBeforeModal = document.activeElement;
   modal.classList.remove('hidden');
+  document.getElementById('modalClose').focus();
 }
-document.getElementById('modalClose').addEventListener('click', () => {
-  document.getElementById('imgModal').classList.add('hidden');
-});
+function closeModal() {
+  const modal = document.getElementById('imgModal');
+  modal.classList.add('hidden');
+  if (lastFocusBeforeModal) lastFocusBeforeModal.focus();
+}
+document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('imgModal').addEventListener('click', (e) => {
-  if (e.target.id === 'imgModal') e.target.classList.add('hidden');
+  if (e.target.id === 'imgModal') closeModal();
+});
+document.addEventListener('keydown', (e) => {
+  const modal = document.getElementById('imgModal');
+  if (modal.classList.contains('hidden')) return;
+  if (e.key === 'Escape') { closeModal(); return; }
+  if (e.key !== 'Tab') return;
+  const focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  if (focusables.length === 0) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
 });
 
 // --- Dynamic Feature Inputs ---
@@ -454,25 +501,43 @@ async function checkHealth() {
   }
 }
 
-// --- Dark Mode ---
-function initDarkMode() {
-  const saved = localStorage.getItem('theme');
-  if (saved === 'dark') {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    document.getElementById('darkToggle').textContent = '☀️';
-  }
-  document.getElementById('darkToggle').addEventListener('click', () => {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
-    document.getElementById('darkToggle').textContent = isDark ? '🌙' : '☀️';
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+// --- Theme selector ---
+function initTheme() {
+  const saved = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  const sel = document.getElementById('themeSelect');
+  sel.value = saved;
+  sel.addEventListener('change', () => {
+    const t = sel.value;
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('theme', t);
     refreshDistribution();
+  });
+}
+
+// --- Density toggle ---
+function initDensity() {
+  const saved = localStorage.getItem('density');
+  if (saved === 'compact') document.body.classList.add('compact');
+  document.getElementById('densityToggle').addEventListener('click', () => {
+    document.body.classList.toggle('compact');
+    localStorage.setItem('density', document.body.classList.contains('compact') ? 'compact' : 'comfortable');
+  });
+}
+
+// --- Drop zone keyboard support ---
+function initDropZone() {
+  const dz = document.getElementById('dropZone');
+  dz.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('csvInput').click(); }
   });
 }
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
-  initDarkMode();
+  initTheme();
+  initDensity();
+  initDropZone();
   document.getElementById('predictBtn').addEventListener('click', predict);
   document.getElementById('saveBtn').addEventListener('click', saveRecord);
   document.getElementById('retrainBtn').addEventListener('click', retrain);
